@@ -11,10 +11,16 @@ class Product extends Model
     protected $fillable = [
         'name',
         'description',
-        'price'
+        'price',
+        'stock',
+
     ];
     public function reviews(){
         return $this->hasMany(Review::class);
+    }
+
+    public function user(){
+        return $this->belongsTo(User::class);
     }
 
 }

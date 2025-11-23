@@ -13,6 +13,20 @@ class ProductController extends Controller
     public function index()
     {
         //
+        try {
+            $products = Product::all();
+            return response()->json([
+                'status' => 'success',
+                'data' => $products
+            ], 200);
+            
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' =>'error',
+                'message' => 'Failed to retrive products'
+            ], 500);
+        }
     }
 
     /**
@@ -29,6 +43,27 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         //
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric',
+                'stock' => 'required|integer',
+            ]);
+
+            $product = $request->user()->products()->create($request->all());
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $product
+            ], 201);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create product'
+            ], 500);
+        }
     }
 
     /**
@@ -50,16 +85,54 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, string $id)
     {
         //
+        try {
+            $product = Product::findOrFail($id);
+
+            $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'description' => 'sometimes|nullable|string',
+                'price' => 'sometimes|required|numeric',
+                'stock' => 'sometimes|required|integer',
+            ]);
+
+            $product->update($request->all());
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $product
+            ], 200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update product'
+            ], 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Product $product)
+    public function destroy(Product $product, string $id)
     {
         //
+        try {
+            $product = Product::findOrFail($id);
+            $product->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Product deleted successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete product'
+            ], 500);
+        }
     }
 }
