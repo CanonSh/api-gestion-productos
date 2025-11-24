@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -18,7 +19,7 @@ class UserController extends Controller
             $r->validate([
                 'name'=>'required|string|max:255|',
                 'email'=>'required|string|email|max:255|unique:users',
-                'password'=> 'required|confirmed|min8'
+                'password'=> 'required|confirmed|min:8'
                 ]);
             
             $user= User::create([
@@ -29,9 +30,20 @@ class UserController extends Controller
 
             return response()->json([
             'message' => 'Usuario registrado exitosamente',
-            'user' => $user,
-            'status' => 201
+            'user' => $user
             ],201);
+        }
+        catch(ValidationException $valEx){
+            return response()->json([
+            'message' => 'Datos inválidos',
+            'errors' => $valEx->errors()
+            ],422);
+        }
+        catch(QueryException $qEx){
+            return response()->json([
+            'message' => 'Datos duplicados',
+            'error' => $qEx->getMessage()
+            ],409);
         }
         catch(Exception $ex){
             return response()->json([
@@ -42,6 +54,7 @@ class UserController extends Controller
     }
 
     public function login(Request $r){
+        try{
             $r->validate([
                 'email'=>'required|string|email',
                 'password'=>'required|string'
@@ -58,18 +71,45 @@ class UserController extends Controller
                 return response()->json([
                 'message' => 'Inicio de sesión exitoso',
                 'user' => $user,
-                'token' => $token,
-                'status' => 200
+                'token' => $token
             ],200);
 
             }
             else{
             return response()->json([
-                'message'=>'Credenciales inválidas',
-                'status'=>401
-            ],401);
+                'message'=>'Credenciales inválidas'
+            ],401);}
+        }
+        catch(ValidationException $valEx){
+            return response()->json([
+            'message' => 'Datos inválidos',
+            'errors' => $valEx->errors()
+            ],422);
+        }
+        catch(Exception $ex){
+            return response()->json([
+            'message' => 'Error iniciando sesión',
+            'error' => $ex->getMessage()
+            ],500);
         }
 
+    }
+
+    public function logout(Request $request){
+        try{
+        $user = $request->user();
+
+        $user->currentAccessToken()->delete();
+        return response()->json([
+            'message' => 'User logged out successfully'
+        ],200);
+        }
+        catch(Exception $ex){
+            return response()->json([
+            'message' => 'Error cerrando sesión',
+            'error' => $ex->getMessage()
+            ],500);
+        }
     }
 
 }
