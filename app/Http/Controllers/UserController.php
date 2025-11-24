@@ -41,7 +41,7 @@ class UserController extends Controller
         }
         catch(QueryException $qEx){
             return response()->json([
-            'message' => 'Datos duplicados',
+            'message' => 'Error de base de datos al registrar al usuario',
             'error' => $qEx->getMessage()
             ],409);
         }
