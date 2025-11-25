@@ -3,63 +3,148 @@
 namespace App\Http\Controllers;
 
 use App\Models\Review;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Crear una review para un producto
      */
-    public function index()
+    public function store(Request $request, $productId)
     {
-        //
+        try {
+            $request->validate([
+                'rating' => 'required|integer|min:1|max:5',
+                'comment' => 'nullable|string'
+            ]);
+
+            // Verificar que el producto exista
+            $product = Product::findOrFail($productId);
+
+            // Crear la review (tu migración permite varias por usuario)
+            $review = Review::create([
+                'product_id' => $productId,
+                'user_id' => auth()->id, 
+                'rating' => $request->rating,
+                'comment' => $request->comment
+            ]);
+
+            return response()->json([
+                'message' => 'Review creada con éxito',
+                'review' => $review
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ocurrió un error al crear la review.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Obtener todas las reviews de un producto
      */
-    public function create()
+    public function index($productId)
     {
-        //
+        try {
+            // Verifica que el producto exista
+            $product = Product::findOrFail($productId);
+
+            $reviews = Review::where('product_id', $productId)
+                             ->with('user')
+                             ->get();
+
+            return response()->json($reviews);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ocurrió un error al obtener las reviews.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Actualizar una review (solo el autor)
      */
-    public function store(Request $request)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $review = Review::findOrFail($id);
+
+            // Revisar que la review sea del usuario autenticado
+            if ($review->user_id !== auth()->id) { 
+                return response()->json(['error' => 'No autorizado'], 403);
+            }
+
+            $request->validate([
+                'rating' => 'integer|min:1|max:5',
+                'comment' => 'nullable|string'
+            ]);
+
+            $review->update($request->only(['rating', 'comment']));
+
+            return response()->json([
+                'message' => 'Review actualizada',
+                'review' => $review
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ocurrió un error al actualizar la review.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Display the specified resource.
+     * Eliminar una review (solo el autor)
      */
-    public function show(Review $review)
+    public function destroy($id)
     {
-        //
+        try {
+            $review = Review::findOrFail($id);
+
+            if ($review->user_id !== auth()->id) { 
+                return response()->json(['error' => 'No autorizado'], 403);
+            }
+
+            $review->delete();
+
+            return response()->json([
+                'message' => 'Review eliminada'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ocurrió un error al eliminar la review.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Obtener promedio de calificación de un producto
      */
-    public function edit(Review $review)
+    public function average($productId)
     {
-        //
-    }
+        try {
+            Product::findOrFail($productId);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Review $review)
-    {
-        //
-    }
+            $avg = Review::where('product_id', $productId)->avg('rating');
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Review $review)
-    {
-        //
+            return response()->json([
+                'product_id' => $productId,
+                'average_rating' => round($avg, 2)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ocurrió un error al calcular el promedio de calificación.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
