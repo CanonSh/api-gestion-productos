@@ -19,7 +19,6 @@ class ReviewController extends Controller
 
             Product::findOrFail($productId);
 
-            // AHORA SÍ: auth()->id() (con paréntesis)
             $userId = auth()->id();
 
             $review = Review::create([
