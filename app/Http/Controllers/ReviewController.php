@@ -6,11 +6,9 @@ use App\Models\Review;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
+
 class ReviewController extends Controller
 {
-    /**
-     * Crear una review para un producto
-     */
     public function store(Request $request, $productId)
     {
         try {
@@ -19,13 +17,14 @@ class ReviewController extends Controller
                 'comment' => 'nullable|string'
             ]);
 
-            // Verificar que el producto exista
-            $product = Product::findOrFail($productId);
+            Product::findOrFail($productId);
 
-            // Crear la review (tu migración permite varias por usuario)
+            // AHORA SÍ: auth()->id() (con paréntesis)
+            $userId = auth()->id();
+
             $review = Review::create([
                 'product_id' => $productId,
-                'user_id' => auth()->id, 
+                'user_id' => $userId,
                 'rating' => $request->rating,
                 'comment' => $request->comment
             ]);
@@ -43,14 +42,10 @@ class ReviewController extends Controller
         }
     }
 
-    /**
-     * Obtener todas las reviews de un producto
-     */
     public function index($productId)
     {
         try {
-            // Verifica que el producto exista
-            $product = Product::findOrFail($productId);
+            Product::findOrFail($productId);
 
             $reviews = Review::where('product_id', $productId)
                              ->with('user')
@@ -66,48 +61,60 @@ class ReviewController extends Controller
         }
     }
 
-    /**
-     * Actualizar una review (solo el autor)
-     */
     public function update(Request $request, $id)
-    {
-        try {
-            $review = Review::findOrFail($id);
+{
+    try {
+        $review = Review::find($id);
 
-            // Revisar que la review sea del usuario autenticado
-            if ($review->user_id !== auth()->id) { 
-                return response()->json(['error' => 'No autorizado'], 403);
-            }
-
-            $request->validate([
-                'rating' => 'integer|min:1|max:5',
-                'comment' => 'nullable|string'
-            ]);
-
-            $review->update($request->only(['rating', 'comment']));
-
+        if (!$review) {
             return response()->json([
-                'message' => 'Review actualizada',
-                'review' => $review
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Ocurrió un error al actualizar la review.',
-                'message' => $e->getMessage()
-            ], 500);
+                'error' => 'Review no encontrada'
+            ], 404);
         }
-    }
 
-    /**
-     * Eliminar una review (solo el autor)
-     */
+        // ID del usuario autenticado
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return response()->json([
+                'error' => 'Token inválido o expirado'
+            ], 401);
+        }
+
+        if ($review->user_id !== $userId) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $request->validate([
+            'rating' => 'integer|min:1|max:5',
+            'comment' => 'nullable|string'
+        ]);
+
+        $review->update([
+            'rating' => $request->rating ?? $review->rating,
+            'comment' => $request->comment ?? $review->comment
+        ]);
+
+        return response()->json([
+            'message' => 'Review actualizada',
+            'review' => $review
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Error al actualizar.',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
     public function destroy($id)
     {
         try {
             $review = Review::findOrFail($id);
 
-            if ($review->user_id !== auth()->id) { 
+            if ($review->user_id !== auth()->id()) {
                 return response()->json(['error' => 'No autorizado'], 403);
             }
 
@@ -125,9 +132,6 @@ class ReviewController extends Controller
         }
     }
 
-    /**
-     * Obtener promedio de calificación de un producto
-     */
     public function average($productId)
     {
         try {

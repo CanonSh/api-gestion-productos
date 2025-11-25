@@ -16,8 +16,11 @@ Route::post('/login', [UserController::class, 'login']);
 Route::post('/logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
 
 // Rutas de reviews
-Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
-Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
-Route::put('/reviews/{id}', [ReviewController::class, 'update']);
-Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-Route::get('/products/{id}/rating', [ReviewController::class, 'average']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/products/{productId}/reviews', [ReviewController::class, 'index']);
+    Route::post('/products/{productId}/reviews', [ReviewController::class, 'store']);
+    Route::put('/reviews/{id}', [ReviewController::class, 'update']);
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+    Route::get('/products/{productId}/reviews/average', [ReviewController::class, 'average']);
+});
+
