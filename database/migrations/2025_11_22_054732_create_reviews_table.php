@@ -12,14 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reviews', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained('products','id')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users','id')->onDelete('cascade');
-            $table->tinyInteger('rating'); //rating de 1 a 5
-            $table->text('comment')->nullable(); //comentario opcional
-            $table->unique(['product_id','user_id']); //un usuario solo puede dejar una reseña por producto
-            $table->timestamps();
-        });
+        $table->id();
+        $table->unsignedBigInteger('product_id');
+        $table->unsignedBigInteger('user_id');
+        $table->tinyInteger('rating')->unsigned(); // de 1 a 5
+        $table->text('comment')->nullable();
+        $table->timestamps();
+
+        $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+    });
     }
 
     /**
