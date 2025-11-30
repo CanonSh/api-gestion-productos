@@ -27,6 +27,32 @@ Laravel has the most extensive and thorough [documentation](https://laravel.com/
 
 If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
+## Puntos de Entrada del API
+
+### Autenticación
+| Método | URI | Descripción |
+| --- | --- | --- |
+| POST | `/register` | Registrar un nuevo usuario. |
+| POST | `/login` | Iniciar sesión de un usuario. |
+| POST | `/logout` | Cerrar sesión de un usuario. |
+
+### Productos
+| Método | URI | Descripción |
+| --- | --- | --- |
+| GET | `/products` | Obtener todos los productos. |
+| POST | `/products` | Crear un nuevo producto. |
+| PUT | `/products/{id}` | Actualizar un producto. |
+| DELETE | `/products/{id}` | Eliminar un producto. |
+
+### Reseñas
+| Método | URI | Descripción |
+| --- | --- | --- |
+| GET | `/products/{productId}/reviews` | Obtener todas las reseñas de un producto. |
+| POST | `/products/{productId}/reviews` | Crear una nueva reseña para un producto. |
+| PUT | `/reviews/{id}` | Actualizar una reseña. |
+| DELETE | `/reviews/{id}` | Eliminar una reseña. |
+| GET | `/products/{productId}/reviews/average` | Obtener la calificación promedio de un producto. |
+
 ## Laravel Sponsors
 
 We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
