@@ -37,3 +37,30 @@ cd api-gestion-productos
 composer install
 cp .env.example .env
 php artisan key:generate
+```
+
+## Puntos de Entrada del API
+
+### Autenticación
+| Método | URI | Descripción |
+| --- | --- | --- |
+| POST | `/register` | Registrar un nuevo usuario. |
+| POST | `/login` | Iniciar sesión de un usuario. |
+| POST | `/logout` | Cerrar sesión de un usuario. |
+
+### Productos
+| Método | URI | Descripción |
+| --- | --- | --- |
+| GET | `/products` | Obtener todos los productos. |
+| POST | `/products` | Crear un nuevo producto. |
+| PUT | `/products/{id}` | Actualizar un producto. |
+| DELETE | `/products/{id}` | Eliminar un producto. |
+
+### Reseñas
+| Método | URI | Descripción |
+| --- | --- | --- |
+| GET | `/products/{productId}/reviews` | Obtener todas las reseñas de un producto. |
+| POST | `/products/{productId}/reviews` | Crear una nueva reseña para un producto. |
+| PUT | `/reviews/{id}` | Actualizar una reseña. |
+| DELETE | `/reviews/{id}` | Eliminar una reseña. |
+| GET | `/products/{productId}/reviews/average` | Obtener la calificación promedio de un producto. |
