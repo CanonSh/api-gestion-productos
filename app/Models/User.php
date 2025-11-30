@@ -50,4 +50,10 @@ class User extends Authenticatable
     public function reviews(){
         return $this->hasMany(Review::class);
     }
+
+    //Relacion entre productos y usuario.
+    //El usuario puede agregar muchos productos
+    public function products(){
+        return $this->hasMany(Product::class);
+    }
 }
