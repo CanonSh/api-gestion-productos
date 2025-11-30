@@ -119,6 +119,8 @@ class ProductController extends Controller
     public function destroy(Product $product, string $id)
     {
         //
+        //This try to delete the product passed by id
+        
         try {
             $product = Product::findOrFail($id);
             $product->delete();
