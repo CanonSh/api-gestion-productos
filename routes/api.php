@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 //
 
-//Rutas protegidas
+//Rutas protegidas para productos
 Route::middleware('auth:sanctum')->group(function() {
 
     Route::get('/products', [ProductController::class, 'index']);
