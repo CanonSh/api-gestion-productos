@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -49,9 +50,15 @@ class ProductController extends Controller
                 'description' => 'nullable|string',
                 'price' => 'required|numeric',
                 'stock' => 'required|integer',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096'
             ]);
+            $data = $request->only(['name','description','price','stock']);
+            if ($request->hasFile('image')) {
+                $data['image'] = $request->file('image')->store('products', 'public');
+            }
 
-            $product = $request->user()->products()->create($request->all());
+
+            $product = $request->user()->products()->create($data);
 
             return response()->json([
                 'status' => 'success',
@@ -62,6 +69,7 @@ class ProductController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to create product'
+                
             ], 500);
         }
     }
@@ -96,9 +104,17 @@ class ProductController extends Controller
                 'description' => 'sometimes|nullable|string',
                 'price' => 'sometimes|required|numeric',
                 'stock' => 'sometimes|required|integer',
+                'image' => 'sometimes|nullable|image|mimes:jpg,jpeg,png,webp|max:4096'
             ]);
+            $data = $request->only(['name','description','price','stock']);
+            if ($request->hasFile('image')) {
 
-            $product->update($request->all());
+                if ($product->image && Storage::disk('public')->exists($product->image)) {
+                    Storage::disk('public')->delete($product->image);
+                }
+                $data['image'] = $request->file('image')->store('products', 'public');
+            }
+            $product->update($data);
 
             return response()->json([
                 'status' => 'success',
@@ -116,13 +132,16 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Product $product, string $id)
+    public function destroy(string $id)
     {
         //
         //This try to delete the product passed by id
         
         try {
             $product = Product::findOrFail($id);
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
             $product->delete();
 
             return response()->json([

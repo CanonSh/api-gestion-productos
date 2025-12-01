@@ -13,7 +13,7 @@ class Product extends Model
         'description',
         'price',
         'stock',
-
+        'image'
     ];
     public function reviews(){
         return $this->hasMany(Review::class);

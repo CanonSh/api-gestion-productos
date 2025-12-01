@@ -38,6 +38,22 @@ composer install
 cp .env.example .env
 php artisan key:generate
 ```
+## Habilitar el almacenamiento publico
+
+`php artisan storage:link`
+
+Si estás en Linux/Mac, da permisos:
+```
+chmod -R 775 storage
+chmod -R 775 bootstrap/cache
+```
+
+Las imágenes se almacenan en:
+
+storage/app/public/products
+
+se accede a la imagen atraves de la URI:
+`http://{host}/storage/products/{filename}`
 
 ## Puntos de Entrada del API
 
