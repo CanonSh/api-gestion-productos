@@ -20,11 +20,10 @@ class ProductController extends Controller
                 'status' => 'success',
                 'data' => $products
             ], 200);
-            
         } catch (\Throwable $th) {
             //throw $th;
             return response()->json([
-                'status' =>'error',
+                'status' => 'error',
                 'message' => 'Failed to retrive products'
             ], 500);
         }
@@ -77,9 +76,22 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show($id)
     {
-        //
+        try {
+            $product = Product::findOrFail($id);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $product
+            ], 200);
+        } catch (\Throwable $th) {
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to show product'
+            ], 500);
+        }
     }
 
     /**
