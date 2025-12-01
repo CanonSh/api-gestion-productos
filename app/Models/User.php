@@ -12,7 +12,7 @@ use App\Models\Review;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory,HasApiTokens, Notifiable;
+    use HasFactory, HasApiTokens, Notifiable;
     /**
      * The attributes that are mass assignable.
      *
@@ -47,12 +47,11 @@ class User extends Authenticatable
         ];
     }
 
-    public function reviews(){
+    public function reviews()
+    {
         return $this->hasMany(Review::class);
     }
 
-    //Relacion entre productos y usuario.
-    //El usuario puede agregar muchos productos
     public function products(){
         return $this->hasMany(Product::class);
     }
