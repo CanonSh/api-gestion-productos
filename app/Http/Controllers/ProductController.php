@@ -15,7 +15,8 @@ class ProductController extends Controller
     {
         //
         try {
-            $products = Product::all();
+            $products = Product::withAvg('reviews', 'rating')->get();
+            
             return response()->json([
                 'status' => 'success',
                 'data' => $products
